@@ -99,8 +99,7 @@ struct ServerCap {
     // for
     // '::' and '>' for '->'. See
     // https://github.com/Microsoft/language-server-protocol/issues/138.
-    std::vector<const char *> triggerCharacters = {".", ":",  ">", "#",
-                                                   "<", "\"", "/"};
+    std::vector<const char *> triggerCharacters = {".", ":", ">", "#", "<", "\"", "/"};
   } completionProvider;
   struct SignatureHelpOptions {
     std::vector<const char *> triggerCharacters = {"(", "{", ","};
@@ -121,8 +120,7 @@ struct ServerCap {
   } codeLensProvider;
   bool documentFormattingProvider = true;
   bool documentRangeFormattingProvider = true;
-  Config::ServerCap::DocumentOnTypeFormattingOptions
-      documentOnTypeFormattingProvider;
+  Config::ServerCap::DocumentOnTypeFormattingOptions documentOnTypeFormattingProvider;
   bool renameProvider = true;
   struct DocumentLinkOptions {
     bool resolveProvider = true;
@@ -145,14 +143,12 @@ struct ServerCap {
 };
 REFLECT_STRUCT(ServerCap::CodeActionOptions, codeActionKinds);
 REFLECT_STRUCT(ServerCap::CodeLensOptions, resolveProvider);
-REFLECT_STRUCT(ServerCap::CompletionOptions, resolveProvider,
-               triggerCharacters);
+REFLECT_STRUCT(ServerCap::CompletionOptions, resolveProvider, triggerCharacters);
 REFLECT_STRUCT(ServerCap::DocumentLinkOptions, resolveProvider);
 REFLECT_STRUCT(ServerCap::ExecuteCommandOptions, commands);
 REFLECT_STRUCT(ServerCap::SaveOptions, includeText);
 REFLECT_STRUCT(ServerCap::SignatureHelpOptions, triggerCharacters);
-REFLECT_STRUCT(ServerCap::TextDocumentSyncOptions, openClose, change, willSave,
-               willSaveWaitUntil, save);
+REFLECT_STRUCT(ServerCap::TextDocumentSyncOptions, openClose, change, willSave, willSaveWaitUntil, save);
 REFLECT_STRUCT(ServerCap, textDocumentSync, hoverProvider, completionProvider, signatureHelpProvider,
                declarationProvider, definitionProvider, implementationProvider, typeDefinitionProvider,
                referencesProvider, documentHighlightProvider, documentSymbolProvider, workspaceSymbolProvider,
@@ -222,15 +218,12 @@ struct TextDocumentClientCap {
   } publishDiagnostics;
 };
 
-REFLECT_STRUCT(TextDocumentClientCap::Completion::CompletionItem,
-               snippetSupport);
+REFLECT_STRUCT(TextDocumentClientCap::Completion::CompletionItem, snippetSupport);
 REFLECT_STRUCT(TextDocumentClientCap::Completion, completionItem);
-REFLECT_STRUCT(TextDocumentClientCap::DocumentSymbol,
-               hierarchicalDocumentSymbolSupport);
+REFLECT_STRUCT(TextDocumentClientCap::DocumentSymbol, hierarchicalDocumentSymbolSupport);
 REFLECT_STRUCT(TextDocumentClientCap::LinkSupport, linkSupport);
 REFLECT_STRUCT(TextDocumentClientCap::PublishDiagnostics, relatedInformation);
-REFLECT_STRUCT(TextDocumentClientCap, completion, definition, documentSymbol,
-               publishDiagnostics);
+REFLECT_STRUCT(TextDocumentClientCap, completion, definition, documentSymbol, publishDiagnostics);
 
 struct ClientCap {
   WorkspaceClientCap workspace;
@@ -324,11 +317,9 @@ void *indexer(void *arg_) {
 }
 } // namespace
 
-void do_initialize(MessageHandler *m, InitializeParam &param,
-                   ReplyOnce &reply) {
+void do_initialize(MessageHandler *m, InitializeParam &param, ReplyOnce &reply) {
   std::string project_path = normalizePath(param.rootUri->getPath());
-  LOG_S(INFO) << "initialize in directory " << project_path << " with uri "
-              << param.rootUri->raw_uri;
+  LOG_S(INFO) << "initialize in directory " << project_path << " with uri " << param.rootUri->raw_uri;
 
   {
     g_config = new Config(param.initializationOptions);
@@ -354,7 +345,11 @@ void do_initialize(MessageHandler *m, InitializeParam &param,
 
     if (g_config->cache.directory.size()) {
       SmallString<256> path(g_config->cache.directory);
+#if LLVM_VERSION_MAJOR >= 22
+      sys::path::make_absolute(project_path, path);
+#else
       sys::fs::make_absolute(project_path, path);
+#endif
       // Use upper case for the Driver letter on Windows.
       g_config->cache.directory = normalizePath(path.str());
       ensureEndsInSlash(g_config->cache.directory);
@@ -364,16 +359,11 @@ void do_initialize(MessageHandler *m, InitializeParam &param,
   // Client capabilities
   const auto &capabilities = param.capabilities;
   g_config->client.hierarchicalDocumentSymbolSupport &=
-      capabilities.textDocument.documentSymbol
-          .hierarchicalDocumentSymbolSupport;
-  g_config->client.linkSupport &=
-      capabilities.textDocument.definition.linkSupport;
-  g_config->client.snippetSupport &=
-      capabilities.textDocument.completion.completionItem.snippetSupport;
-  g_config->client.diagnosticsRelatedInformation &=
-      capabilities.textDocument.publishDiagnostics.relatedInformation;
-  didChangeWatchedFiles =
-      capabilities.workspace.didChangeWatchedFiles.dynamicRegistration;
+      capabilities.textDocument.documentSymbol.hierarchicalDocumentSymbolSupport;
+  g_config->client.linkSupport &= capabilities.textDocument.definition.linkSupport;
+  g_config->client.snippetSupport &= capabilities.textDocument.completion.completionItem.snippetSupport;
+  g_config->client.diagnosticsRelatedInformation &= capabilities.textDocument.publishDiagnostics.relatedInformation;
+  didChangeWatchedFiles = capabilities.workspace.didChangeWatchedFiles.dynamicRegistration;
   g_config->client.semanticTokensRefresh &= capabilities.workspace.semanticTokens.refreshSupport;
 
   if (!g_config->client.snippetSupport)
@@ -390,8 +380,7 @@ void do_initialize(MessageHandler *m, InitializeParam &param,
   {
     InitializeResult result;
     auto &c = result.capabilities;
-    c.documentOnTypeFormattingProvider =
-        g_config->capabilities.documentOnTypeFormattingProvider;
+    c.documentOnTypeFormattingProvider = g_config->capabilities.documentOnTypeFormattingProvider;
     c.foldingRangeProvider = g_config->capabilities.foldingRangeProvider;
     c.workspace = g_config->capabilities.workspace;
     reply(result);
@@ -485,11 +474,7 @@ void MessageHandler::initialized(EmptyParam &) {
   }
 }
 
-void MessageHandler::shutdown(EmptyParam &, ReplyOnce &reply) {
-  reply(JsonNull{});
-}
+void MessageHandler::shutdown(EmptyParam &, ReplyOnce &reply) { reply(JsonNull{}); }
 
-void MessageHandler::exit(EmptyParam &) {
-  pipeline::g_quit.store(true, std::memory_order_relaxed);
-}
+void MessageHandler::exit(EmptyParam &) { pipeline::g_quit.store(true, std::memory_order_relaxed); }
 } // namespace ccls

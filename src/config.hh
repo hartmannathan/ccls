@@ -88,7 +88,11 @@ struct Config {
     // ["-fopenmp", "-m*", "-Wall"].
     std::vector<std::string> excludeArgs;
 
-    // Additional arguments to pass to clang.
+    // Arguments to be inserted after the compiler driver name. These serve as default arguments that can be overridden
+    // by user-provided arguments.
+    std::vector<std::string> prependArgs;
+
+    // Additional arguments to be appended at the end of the argument list.
     std::vector<std::string> extraArgs;
 
     // Translate absolute paths in compile_commands.json entries, .ccls options
@@ -324,42 +328,30 @@ struct Config {
     int maxNum = 2000;
   } xref;
 };
-REFLECT_STRUCT(Config::Cache, directory, format, hierarchicalPath,
-               retainInMemory);
-REFLECT_STRUCT(Config::ServerCap::DocumentOnTypeFormattingOptions,
-               firstTriggerCharacter, moreTriggerCharacter);
-REFLECT_STRUCT(Config::ServerCap::Workspace::WorkspaceFolders, supported,
-               changeNotifications);
+REFLECT_STRUCT(Config::Cache, directory, format, hierarchicalPath, retainInMemory);
+REFLECT_STRUCT(Config::ServerCap::DocumentOnTypeFormattingOptions, firstTriggerCharacter, moreTriggerCharacter);
+REFLECT_STRUCT(Config::ServerCap::Workspace::WorkspaceFolders, supported, changeNotifications);
 REFLECT_STRUCT(Config::ServerCap::Workspace, workspaceFolders);
-REFLECT_STRUCT(Config::ServerCap, documentOnTypeFormattingProvider,
-               foldingRangeProvider, workspace);
-REFLECT_STRUCT(Config::Clang, excludeArgs, extraArgs, pathMappings,
-               resourceDir);
-REFLECT_STRUCT(Config::ClientCapability, diagnosticsRelatedInformation,
-               hierarchicalDocumentSymbolSupport, linkSupport, snippetSupport);
+REFLECT_STRUCT(Config::ServerCap, documentOnTypeFormattingProvider, foldingRangeProvider, workspace);
+REFLECT_STRUCT(Config::Clang, excludeArgs, prependArgs, extraArgs, pathMappings, resourceDir);
+REFLECT_STRUCT(Config::ClientCapability, diagnosticsRelatedInformation, hierarchicalDocumentSymbolSupport, linkSupport,
+               snippetSupport);
 REFLECT_STRUCT(Config::CodeLens, localVariables);
-REFLECT_STRUCT(Config::Completion::Include, blacklist, maxPathSize,
-               suffixWhitelist, whitelist);
-REFLECT_STRUCT(Config::Completion, caseSensitivity, detailedLabel,
-               dropOldRequests, duplicateOptional, filterAndSort, include,
-               maxNum, placeholder);
-REFLECT_STRUCT(Config::Diagnostics, blacklist, onChange, onOpen, onSave,
-               spellChecking, whitelist)
+REFLECT_STRUCT(Config::Completion::Include, blacklist, maxPathSize, suffixWhitelist, whitelist);
+REFLECT_STRUCT(Config::Completion, caseSensitivity, detailedLabel, dropOldRequests, duplicateOptional, filterAndSort,
+               include, maxNum, placeholder);
+REFLECT_STRUCT(Config::Diagnostics, blacklist, onChange, onOpen, onSave, spellChecking, whitelist)
 REFLECT_STRUCT(Config::Highlight, largeFileSize, rainbow, blacklist, whitelist)
 REFLECT_STRUCT(Config::Index::Name, suppressUnwrittenScope);
-REFLECT_STRUCT(Config::Index, blacklist, comments, initialNoLinkage,
-               initialBlacklist, initialWhitelist, maxInitializerLines,
-               multiVersion, multiVersionBlacklist, multiVersionWhitelist, name,
-               onChange, parametersInDeclarations, threads, trackDependency,
-               whitelist);
+REFLECT_STRUCT(Config::Index, blacklist, comments, initialNoLinkage, initialBlacklist, initialWhitelist,
+               maxInitializerLines, multiVersion, multiVersionBlacklist, multiVersionWhitelist, name, onChange,
+               parametersInDeclarations, threads, trackDependency, whitelist);
 REFLECT_STRUCT(Config::Request, timeout);
 REFLECT_STRUCT(Config::Session, maxNum);
 REFLECT_STRUCT(Config::WorkspaceSymbol, caseSensitivity, maxNum, sort);
 REFLECT_STRUCT(Config::Xref, maxNum);
-REFLECT_STRUCT(Config, compilationDatabaseCommand, compilationDatabaseDirectory,
-               cache, capabilities, clang, client, codeLens, completion,
-               diagnostics, highlight, index, request, session, workspaceSymbol,
-               xref);
+REFLECT_STRUCT(Config, compilationDatabaseCommand, compilationDatabaseDirectory, cache, capabilities, clang, client,
+               codeLens, completion, diagnostics, highlight, index, request, session, workspaceSymbol, xref);
 
 extern Config *g_config;
 
